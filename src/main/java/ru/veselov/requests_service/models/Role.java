@@ -20,7 +20,7 @@ public class Role {
     private String name;
 
     @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
+    private Set<Person> people;
 
     @Override
     public boolean equals(Object o) {

@@ -2,15 +2,15 @@ package ru.veselov.requests_service.dto;
 
 import lombok.Getter;
 import lombok.Setter;
-import ru.veselov.requests_service.models.Role;
 
 import java.util.List;
-import java.util.Set;
 
 @Getter
 @Setter
-public class UserDTO {
+public class PersonDTO {
     private Long id;
     private String name;
+/*    private String username;
+    private String password;*/
     private List<RoleDTO> roles;
 }

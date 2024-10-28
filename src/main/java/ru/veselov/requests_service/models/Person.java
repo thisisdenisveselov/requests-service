@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
-@Table(name = "Users")
+@Table(name = "Persons")
 @Getter
 @Setter
 @NoArgsConstructor
-public class User {
+public class Person {
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +20,16 @@ public class User {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "password")
+    private String password;
+
     @ManyToMany
     @JoinTable(
-            name = "Users_Roles",
-            joinColumns = @JoinColumn(name = "user_id"),
+            name = "Persons_Roles",
+            joinColumns = @JoinColumn(name = "person_id"),
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
@@ -36,10 +42,10 @@ public class User {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        User user = (User) o;
+        Person person = (Person) o;
 
-        if (id != null ? !id.equals(user.id) : user.id != null) return false;
-        return name != null ? name.equals(user.name) : user.name == null;
+        if (id != null ? !id.equals(person.id) : person.id != null) return false;
+        return name != null ? name.equals(person.name) : person.name == null;
     }
 
     @Override

@@ -5,6 +5,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.veselov.requests_service.dto.RequestDTO;
 import ru.veselov.requests_service.exceptions.IllegalParamsException;
@@ -40,9 +42,9 @@ public class RequestController {
         Sort sort = ascending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-/*        if (userId != null && userName != null) {
-            throw new IllegalParamsException(String.format(""));
-        }*/
+        if (userId != null && userName != null)
+            throw new IllegalParamsException("Bad Request");
+
         List<Request> requests;
         if (userName != null && status != null)
             requests = requestService.getRequestByUserNameAndStatus(pageable, userName, status);
@@ -53,7 +55,8 @@ public class RequestController {
         else if (status != null)
             requests = requestService.getRequestByStatus(pageable, status);
         else
-            requests = requestService.getAllRequests(pageable);
+            throw new IllegalParamsException("Bad Request");
+            //requests = requestService.getAllRequests(pageable);
 
         return requests.stream()
                 .map(this::convertToRequestDTO)

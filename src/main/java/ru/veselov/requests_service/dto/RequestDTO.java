@@ -9,5 +9,5 @@ public class RequestDTO {
     private Long id;
     private String status;
     private String text;
-    private UserDTO owner;
+    private PersonDTO owner;
 }

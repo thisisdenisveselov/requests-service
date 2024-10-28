@@ -31,6 +31,6 @@ public class Request {
     private Timestamp updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User owner;
+    @JoinColumn(name = "person_id", referencedColumnName = "id")
+    private Person owner;
 }
