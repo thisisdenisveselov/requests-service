@@ -53,12 +53,12 @@ public class RequestService {
         return requestRepository.save(updatedRequest);
     }
 
-
-/*    @Transactional(readOnly = true)
-    public List<Request> getAllRequests(Pageable pageable) {
-        return requestRepository.findAll(pageable).stream()
-                .collect(Collectors.toList());
-    }*/
+    @PreAuthorize("hasRole('ROLE_USER')")
+    @Transactional(readOnly = true)
+    public List<Request> getPersonOwnRequest(Pageable pageable, Long personId) {
+        Person person = personService.getPersonById(personId);
+        return requestRepository.findByOwner(pageable, person);
+    }
 
     @Transactional(readOnly = true)
     public Request getRequestById(Long id) {
@@ -66,40 +66,53 @@ public class RequestService {
                 .orElseThrow(() -> new NotFoundException(String.format("Заявка с id %d не найдена", id)));
     }
 
-    @PreAuthorize("hasRole('ROLE_OPERATOR')")//???
+    @PreAuthorize("hasRole('ROLE_OPERATOR')")
     @Transactional(readOnly = true)
-    public List<Request> getRequestByStatus(Pageable pageable, RequestStatus status) {
-        return requestRepository.findByStatus(pageable, status);
+    public List<Request> getSentRequests(Pageable pageable) {
+        List<Request> requests = requestRepository.findByStatus(pageable, RequestStatus.SENT);
+        return modifyText(requests);
     }
 
+    @PreAuthorize("hasRole('ROLE_OPERATOR')")
     @Transactional(readOnly = true)
-    public List<Request> getRequestByUserId(Pageable pageable, Long userId) {
-        Person person = personService.getPersonById(userId);
-        return requestRepository.findByOwner(pageable, person);
+    public List<Request> getSentRequestsByPersonName(Pageable pageable, String userName) {
+        Person person = getPersonByName(userName);
+        List<Request> requests =  requestRepository.findByOwnerAndStatus(pageable, person, RequestStatus.SENT);
+        return modifyText(requests);
     }
 
-    @Transactional(readOnly = true)
-    public List<Request> getRequestByUserName(Pageable pageable, String userName) {
-        Person person = getUserByName(userName);
-        return requestRepository.findByOwner(pageable, person);
+    private static List<Request> modifyText(List<Request> requests) {
+        requests.forEach(request -> {
+            String modifiedText = addDashes(request.getText());
+            request.setText(modifiedText);
+        });
+        return requests;
     }
 
-    @Transactional(readOnly = true)
-    public List<Request> getRequestByUserNameAndStatus(Pageable pageable, String userName, RequestStatus status) {
-        Person person = getUserByName(userName);
-        return requestRepository.findByOwnerAndStatus(pageable, person, status);
+    private static String addDashes(String str) {
+        return str.chars()
+                .mapToObj(c -> String.valueOf((char) c))
+                .collect(Collectors.joining("-"));
     }
 
-    private Person getUserByName(String userName) {
-        List<Person> people = personService.getPersonsByName(userName);
+    private Person getPersonByName(String personName) {
+        List<Person> people = personService.getPersonsByName(personName);
         if(people.size() > 1)
-            throw new IllegalParamsException(String.format("Найдено более одного пользователя с именем %s. Уточните поиск.", userName));
+            throw new IllegalParamsException(String.format("Найдено более одного пользователя с именем %s. Уточните поиск.", personName));
         return people.get(0);
     }
 
+    @PreAuthorize("hasRole('ROLE_USER')")
     @Transactional
-    public Request updateStatus(Long requestId, RequestStatus newStatus) {
-        Request request = getRequestById(requestId);
+    public Request sendRequest(Request request, RequestStatus newStatus) {
+        request.setStatus(newStatus);
+
+        return requestRepository.save(request);
+    }
+
+    @PreAuthorize("hasRole('ROLE_OPERATOR')")
+    @Transactional
+    public Request processRequest(Request request, RequestStatus newStatus) {
         request.setStatus(newStatus);
 
         return requestRepository.save(request);

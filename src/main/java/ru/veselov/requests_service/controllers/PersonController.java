@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.web.bind.annotation.*;
 import ru.veselov.requests_service.dto.PersonDTO;
+import ru.veselov.requests_service.exceptions.IllegalParamsException;
 import ru.veselov.requests_service.models.Person;
 import ru.veselov.requests_service.services.PersonService;
 
@@ -23,18 +24,17 @@ public class PersonController {
             return personService.getPersonsByName(name).stream().map(this::convertToPersonDTO).collect(Collectors.toList());
         else
             return personService.getPersons().stream().map(this::convertToPersonDTO).collect(Collectors.toList());
-}
-/*    @GetMapping("/{personId}")
-    public PersonDTO getPerson(@PathVariable Long personId) {
-        return modelMapper.map(personService.getPersonById(personId), PersonDTO.class);
-    }*/
+    }
 
     @PatchMapping("/{personId}/roles")
     public PersonDTO alterRoles(@PathVariable Long personId,
-                                @RequestParam String roleName,
+                                @RequestParam(name = "role_name") String roleName,
                                 @RequestParam Boolean add) {
-        Person person = personService.alterRole(personId, roleName, add);
-        return modelMapper.map(person, PersonDTO.class);
+        if (roleName.equals("ROLE_ADMIN") && add) {
+            Person person = personService.addAdminRole(personId);
+            return modelMapper.map(person, PersonDTO.class);
+        } else
+            throw new IllegalParamsException("Bad Request");
     }
 
     private PersonDTO convertToPersonDTO(Person person) {

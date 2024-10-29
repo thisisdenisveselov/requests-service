@@ -16,7 +16,6 @@ import ru.veselov.requests_service.repositories.PersonRepository;
 import ru.veselov.requests_service.security.PersonDetails;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service

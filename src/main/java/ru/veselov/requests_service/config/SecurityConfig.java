@@ -8,6 +8,7 @@ import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
@@ -18,41 +19,23 @@ import ru.veselov.requests_service.services.PersonDetailsService;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
-    private final PersonDetailsService personDetailsService;
-
     private final UserDetailsService userDetailsService;
 
-    public SecurityConfig(PersonDetailsService personDetailsService, UserDetailsService userDetailsService) {
-        this.personDetailsService = personDetailsService;
+    public SecurityConfig(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                    //    .requestMatchers("/persons").hasRole("ADMIN")
+                        .requestMatchers("/persons/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
-
-                .httpBasic(Customizer.withDefaults())   //for postman
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .httpBasic(Customizer.withDefaults())
                 .build();
     }
-    // .requestMatchers("/", "/home").permitAll()
-    //  .csrf(customizer -> customizer.disable())
-    // .authorizeHttpRequests(authorizeRequests -> authorizeRequests.anyRequest().authenticated())
-    //  .formLogin(Customizer.withDefaults())  //for browser
-
-   /* @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserDetailsService() {
-            @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                return new InMemory;
-            }
-        }
-    }*/
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
@@ -62,16 +45,4 @@ public class SecurityConfig {
 
         return provider;
     }
-
-/*    @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails user =
-                User.withDefaultPasswordEncoder()
-                        .username("user")
-                        .password("password")
-                        .roles("USER")
-                        .build();
-
-        return new InMemoryUserDetailsManager(user);
-    }*/
 }

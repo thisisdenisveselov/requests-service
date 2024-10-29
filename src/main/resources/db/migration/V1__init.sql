@@ -25,27 +25,30 @@ CREATE TABLE Requests (
     person_id BIGINT REFERENCES Persons(id)
 );
 
-INSERT INTO Persons (name, username, password) VALUES ('Ivan','user1', '123');
+INSERT INTO Persons (name, username, password) VALUES ('Ivan','user', '123');
 INSERT INTO Persons (name, username, password) VALUES ('Bob','user2', '123');
-INSERT INTO Persons (name, username, password) VALUES ('Bill','user3', '123');
-INSERT INTO Persons (name, username, password) VALUES ('Tod','operator1', '123');
-INSERT INTO Persons (name, username, password) VALUES ('Mary','operator2', '123');
-INSERT INTO Persons (name, username, password) VALUES ('Kevin','admin1', '123');
+INSERT INTO Persons (name, username, password) VALUES ('Tod','operator_user', '123');
+INSERT INTO Persons (name, username, password) VALUES ('Mary','operator', '123');
+INSERT INTO Persons (name, username, password) VALUES ('Kevin','admin_operator_user', '123');
+INSERT INTO Persons (name, username, password) VALUES ('Vasya','admin', '123');
 
 INSERT INTO roles (name) VALUES ('ROLE_USER');
 INSERT INTO roles (name) VALUES ('ROLE_OPERATOR');
 INSERT INTO roles (name) VALUES ('ROLE_ADMIN');
 
 INSERT INTO Persons_Roles (person_id, role_id) VALUES (1, 1);
-INSERT INTO Persons_Roles (person_id, role_id) VALUES (2, 3);
+INSERT INTO Persons_Roles (person_id, role_id) VALUES (2, 1);
 INSERT INTO Persons_Roles (person_id, role_id) VALUES (3, 1);
-INSERT INTO Persons_Roles (person_id, role_id) VALUES (4, 1);
+INSERT INTO Persons_Roles (person_id, role_id) VALUES (3, 2);
 INSERT INTO Persons_Roles (person_id, role_id) VALUES (4, 2);
 INSERT INTO Persons_Roles (person_id, role_id) VALUES (5, 1);
 INSERT INTO Persons_Roles (person_id, role_id) VALUES (5, 2);
-INSERT INTO Persons_Roles (person_id, role_id) VALUES (6, 1);
-INSERT INTO Persons_Roles (person_id, role_id) VALUES (6, 2);
+INSERT INTO Persons_Roles (person_id, role_id) VALUES (5, 3);
 INSERT INTO Persons_Roles (person_id, role_id) VALUES (6, 3);
 
-/*INSERT INTO requests (status, text, created_at, user_id) VALUES ('DRAFT', 'text test req', '2016-06-22 19:10:25-07', 1);
-INSERT INTO requests (status, text, created_at, user_id) VALUES ('DRAFT', 'text test req 2', '2017-06-22 20:10:25-07', 1);*/
+INSERT INTO requests (status, text, created_at, person_id) VALUES ('DRAFT', 'text1', '2016-06-22 19:10:25-07', 1);
+INSERT INTO requests (status, text, created_at, person_id) VALUES ('DRAFT', 'text2', '2016-06-22 20:10:25-07', 1);
+INSERT INTO requests (status, text, created_at, person_id) VALUES ('DRAFT', 'text3', '2016-06-22 21:10:25-07', 1);
+INSERT INTO requests (status, text, created_at, person_id) VALUES ('SENT', 'text4', '2017-06-22 19:10:25-07', 2);
+INSERT INTO requests (status, text, created_at, person_id) VALUES ('APPROVED', 'text1', '2016-07-22 19:10:25-07', 1);
+INSERT INTO requests (status, text, created_at, person_id) VALUES ('DECLINED', 'text1', '2016-08-22 19:10:25-07', 2);

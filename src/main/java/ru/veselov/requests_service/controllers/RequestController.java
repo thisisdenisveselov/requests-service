@@ -5,8 +5,6 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.veselov.requests_service.dto.RequestDTO;
 import ru.veselov.requests_service.exceptions.IllegalParamsException;
@@ -32,8 +30,8 @@ public class RequestController {
 
     @GetMapping()
     public List<RequestDTO> getRequests(
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) String userName,
+            @RequestParam(required = false, name = "person_id") Long personId,
+            @RequestParam(required = false, name = "person_name") String personName,
             @RequestParam(required = false) RequestStatus status,
             @RequestParam(defaultValue = "0") Integer page,
             @RequestParam(defaultValue = "5") Integer size,
@@ -42,21 +40,18 @@ public class RequestController {
         Sort sort = ascending ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
         Pageable pageable = PageRequest.of(page, size, sort);
 
-        if (userId != null && userName != null)
+        if (personId != null && personName != null && status != null)
             throw new IllegalParamsException("Bad Request");
 
         List<Request> requests;
-        if (userName != null && status != null)
-            requests = requestService.getRequestByUserNameAndStatus(pageable, userName, status);
-        else if (userName != null)
-            requests = requestService.getRequestByUserName(pageable, userName);
-        else if (userId != null)
-            requests = requestService.getRequestByUserId(pageable, userId);
-        else if (status != null)
-            requests = requestService.getRequestByStatus(pageable, status);
+        if (personId != null)
+            requests = requestService.getPersonOwnRequest(pageable, personId);
+        else if (personName != null && status == RequestStatus.SENT)
+            requests = requestService.getSentRequestsByPersonName(pageable, personName);
+        else if (status == RequestStatus.SENT)
+            requests = requestService.getSentRequests(pageable);
         else
             throw new IllegalParamsException("Bad Request");
-            //requests = requestService.getAllRequests(pageable);
 
         return requests.stream()
                 .map(this::convertToRequestDTO)
@@ -70,8 +65,16 @@ public class RequestController {
     }
 
     @PatchMapping("/{requestId}/status")
-    public RequestDTO updateStatus(@PathVariable Long requestId, @RequestParam RequestStatus newStatus) {
-        Request request =  requestService.updateStatus(requestId, newStatus);
+    public RequestDTO updateStatus(@PathVariable Long requestId, @RequestParam(name = "new_status") RequestStatus newStatus) {
+        Request request = requestService.getRequestById(requestId);
+        if (request.getStatus() == RequestStatus.DRAFT && newStatus == RequestStatus.SENT)
+            request =  requestService.sendRequest(request, newStatus);
+        else if (request.getStatus() == RequestStatus.SENT &&
+                (newStatus == RequestStatus.ACCEPTED || newStatus == RequestStatus.DECLINED))
+            request =  requestService.processRequest(request, newStatus);
+        else
+            throw new IllegalParamsException("Bad Request");
+
         return convertToRequestDTO(request);
     }
 

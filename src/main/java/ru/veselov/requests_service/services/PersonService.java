@@ -1,7 +1,6 @@
 package ru.veselov.requests_service.services;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.veselov.requests_service.exceptions.NotFoundException;
@@ -17,14 +16,13 @@ import java.util.Set;
 public class PersonService {
     private final PersonRepository personRepository;
     private final RoleService roleService;
+    private static final String ROLE_ADMIN = "ROLE_ADMIN";
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<Person> getPersons() {
         return personRepository.findAll();
     }
 
-    @PreAuthorize("hasRole('ROLE_OPERATOR') || hasRole('ROLE_ADMIN')")
     @Transactional(readOnly = true)
     public List<Person> getPersonsByName(String name) {
         List<Person> people = personRepository.findByNameContainingIgnoreCase(name);
@@ -39,18 +37,11 @@ public class PersonService {
                 .orElseThrow(() -> new NotFoundException(String.format("Пользователь с id %d не найден", id)));
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     @Transactional
-    public Person alterRole(Long personId, String roleName, boolean add) {
+    public Person addAdminRole(Long personId) {
         Person person = getPersonById(personId);
-        Role alteredRole = roleService.getRoleByName(roleName);
         Set<Role> roles = person.getRoles();
-
-        if (add)
-            roles.add(alteredRole);
-        else
-            roles.remove(alteredRole);
-
+        roles.add(roleService.getRoleByName(ROLE_ADMIN));
         person.setRoles(roles);
         return personRepository.save(person);
     }
