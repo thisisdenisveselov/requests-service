@@ -1,0 +1,28 @@
+services:
+  bot:
+    build:
+      context: .
+    image: requests-service-image
+    container_name: requests-service-container
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/requests_service
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=root
+    restart: always
+  db:
+    image: postgres:12.0
+    container_name: requests-service-db
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: requests_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root
+    volumes:
+      - ./docker/postgres/data:/var/lib/postgresql/data

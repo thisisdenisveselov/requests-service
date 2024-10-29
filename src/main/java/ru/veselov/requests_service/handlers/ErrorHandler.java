@@ -16,59 +16,28 @@ import java.util.Map;
 @RestControllerAdvice
 public class ErrorHandler {
 
-
     @ExceptionHandler(ForbiddenActionException.class)
-    public ResponseEntity<Map<String, Object>> handlerForbiddenActionException(ForbiddenActionException ex) {
-        Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("status", HttpStatus.FORBIDDEN.value());
-        errorDetails.put("error", "this action is forbidden for this role");
-        errorDetails.put("message", ex.getMessage());
-        errorDetails.put("timestamp", LocalDateTime.now());
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.FORBIDDEN);
+    public ResponseEntity<Map<String, Object>> handleForbiddenActionException(ForbiddenActionException ex) {
+        return buildErrorResponse(HttpStatus.FORBIDDEN, "this action is forbidden for this role", ex.getMessage());
     }
 
     @ExceptionHandler(IllegalParamsException.class)
     public ResponseEntity<Map<String, Object>> handleIllegalParamsException(IllegalParamsException ex) {
-        Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("status", HttpStatus.BAD_REQUEST.value());
-        errorDetails.put("error", "Bad Request");
-        errorDetails.put("message", ex.getMessage());
-        errorDetails.put("timestamp", LocalDateTime.now());
-
-        return new ResponseEntity<>(errorDetails, HttpStatus.BAD_REQUEST);
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage());
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handlerNotFoundException(NotFoundException ex) {
+    public ResponseEntity<Map<String, Object>> handleNotFoundException(NotFoundException ex) {
+        return buildErrorResponse(HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
+    }
+
+    private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String error, String message) {
         Map<String, Object> errorDetails = new HashMap<>();
-        errorDetails.put("status", HttpStatus.NOT_FOUND.value());
-        errorDetails.put("error", "Not Found");
-        errorDetails.put("message", ex.getMessage());
+        errorDetails.put("status", status.value());
+        errorDetails.put("error", error);
+        errorDetails.put("message", message);
         errorDetails.put("timestamp", LocalDateTime.now());
 
-        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorDetails, status);
     }
-
-    /*@ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handlerNotFoundException(final NotFoundException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
-    }
-    *//*@ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handlerIllegalParamsException(final IllegalParamsException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
-    }*//*
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponse handlerForbiddenActionException(final ForbiddenActionException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
-    }*/
 }
